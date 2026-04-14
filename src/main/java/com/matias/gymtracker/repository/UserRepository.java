@@ -1,7 +1,7 @@
-package com.matias.taskly.repository;
+package com.matias.gymtracker.repository;
 
 
-import com.matias.taskly.model.User;
+import com.matias.gymtracker.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +15,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Custom query to check if an email is already registered — used in register
     boolean existsByEmail(String email);
+
+
+    Optional<User> findById(Long id);
 
 
 }
