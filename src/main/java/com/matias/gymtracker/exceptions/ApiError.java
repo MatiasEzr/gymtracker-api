@@ -1,4 +1,4 @@
-package com.matias.taskly.exceptions;
+package com.matias.gymtracker.exceptions;
 
 import java.time.Instant;
 

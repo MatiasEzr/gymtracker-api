@@ -1,7 +1,8 @@
 package com.matias.gymtracker.exceptions;
 
-public class ForbbidenException extends RuntimeException {
-    public ForbbidenException(String message) {
+public class ForbiddenException extends RuntimeException {
+
+    public ForbiddenException(String message) {
         super(message);
     }
 }
