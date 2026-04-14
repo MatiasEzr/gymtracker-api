@@ -1,4 +1,4 @@
-package com.matias.taskly.exceptions;
+package com.matias.gymtracker.exceptions;
 
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,19 +81,81 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleResourceNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
 
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<ApiError> handleInvalidCredentialsException(TaskNotFoundException e, HttpServletRequest  request) {
         ApiError error = new ApiError(
-                "TASK_NOT_FOUND",
-                e.getMessage(),
+                "RESOURCE_NOT_FOUND",
+                ex.getMessage(),
                 request.getRequestURI(),
                 Instant.now()
         );
 
-
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGeneric(
+            Exception ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                "INTERNAL_ERROR",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(
+            ForbiddenException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                "FORBIDDEN",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiError> handleDuplicate(
+            DuplicateResourceException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                "DUPLICATE_RESOURCE",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DayAlreadyAssignedException.class)
+    public ResponseEntity<ApiError> handleDayAlreadyAssigned(
+            DayAlreadyAssignedException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                "DAY_ALREADY_ASSIGNED",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+
 
 
 }
