@@ -2,6 +2,7 @@ package com.matias.gymtracker.service;
 
 import com.matias.gymtracker.entity.Exercise;
 import com.matias.gymtracker.entity.RoutineDay;
+import com.matias.gymtracker.exceptions.ForbiddenException;
 import com.matias.gymtracker.exceptions.ResourceNotFoundException;
 import com.matias.gymtracker.repository.ExerciseRepository;
 import com.matias.gymtracker.repository.RoutineDayRepository;
@@ -20,11 +21,9 @@ public class ExerciseService {
     /**
      * Get all exercises for a routine day
      */
-    public List<Exercise> getAllByRoutineDay(Long dayId) {
+    public List<Exercise> getAllByRoutineDay(Long dayId, Long userId) {
 
-        if (!routineDayRepository.existsById(dayId)) {
-            throw new ResourceNotFoundException("RoutineDay", dayId);
-        }
+        validateRoutineDayOwnership(dayId, userId);
 
         return exerciseRepository.findByRoutineDayId(dayId);
     }
@@ -32,10 +31,9 @@ public class ExerciseService {
     /**
      * Add exercise to a routine day
      */
-    public Exercise addToRoutineDay(Long dayId, Exercise exercise) {
+    public Exercise addToRoutineDay(Long dayId, Exercise exercise, Long userId) {
 
-        RoutineDay routineDay = routineDayRepository.findById(dayId)
-                .orElseThrow(() -> new ResourceNotFoundException("RoutineDay", dayId));
+        RoutineDay routineDay = validateRoutineDayOwnership(dayId, userId);
 
         // maintain bidirectional consistency
         routineDay.getExercises().add(exercise);
@@ -47,9 +45,9 @@ public class ExerciseService {
     /**
      * Update exercise fields
      */
-    public Exercise update(Long exerciseId, Exercise updatedExercise) {
+    public Exercise update(Long exerciseId, Exercise updatedExercise, Long userId) {
 
-        Exercise existing = findByIdOrThrow(exerciseId);
+        Exercise existing = findByIdOrThrow(exerciseId, userId);
 
         existing.setName(updatedExercise.getName());
         existing.setMuscle(updatedExercise.getMuscle());
@@ -62,9 +60,9 @@ public class ExerciseService {
     /**
      * Delete exercise
      */
-    public void delete(Long exerciseId) {
+    public void delete(Long exerciseId, Long userId) {
 
-        Exercise exercise = findByIdOrThrow(exerciseId);
+        Exercise exercise = findByIdOrThrow(exerciseId, userId);
         exerciseRepository.delete(exercise);
     }
 
@@ -75,5 +73,26 @@ public class ExerciseService {
 
         return exerciseRepository.findById(exerciseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Exercise", exerciseId));
+    }
+
+    public Exercise findByIdOrThrow(Long exerciseId, Long userId) {
+        Exercise exercise = findByIdOrThrow(exerciseId);
+
+        if (exercise.getRoutineDay() == null || !exercise.getRoutineDay().getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this exercise");
+        }
+
+        return exercise;
+    }
+
+    private RoutineDay validateRoutineDayOwnership(Long dayId, Long userId) {
+        RoutineDay routineDay = routineDayRepository.findById(dayId)
+                .orElseThrow(() -> new ResourceNotFoundException("RoutineDay", dayId));
+
+        if (!routineDay.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this routine");
+        }
+
+        return routineDay;
     }
 }

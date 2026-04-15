@@ -5,7 +5,9 @@ import com.matias.gymtracker.exceptions.ExistEmailException;
 import com.matias.gymtracker.exceptions.InvalidCredentialsException;
 import com.matias.gymtracker.exceptions.UserNotFoundException;
 import com.matias.gymtracker.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserService {
 
     private final UserRepository userRepository;

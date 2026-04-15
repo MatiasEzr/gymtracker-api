@@ -42,12 +42,7 @@ public class RoutineDayService {
 
     public RoutineDay update(Long routineDayId, RoutineDay updated, Long userId) {
 
-        RoutineDay existing = findByIdOrThrow(routineDayId);
-
-        // validate ownership
-        if (!existing.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("You do not have permission to modify this routine");
-        }
+        RoutineDay existing = findByIdOrThrow(routineDayId, userId);
 
         // controlled update (partial-safe)
         if (updated.getName() != null) {
@@ -63,12 +58,7 @@ public class RoutineDayService {
 
     public void delete(Long routineDayId, Long userId) {
 
-        RoutineDay existing = findByIdOrThrow(routineDayId);
-
-        // validate ownership
-        if (!existing.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("You do not have permission to delete this routine");
-        }
+        RoutineDay existing = findByIdOrThrow(routineDayId, userId);
 
         // cascade handles exercises automatically
         routineDayRepository.delete(existing);
@@ -77,6 +67,16 @@ public class RoutineDayService {
     public RoutineDay findByIdOrThrow(Long id) {
         return routineDayRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("RoutineDay", id));
+    }
+
+    public RoutineDay findByIdOrThrow(Long id, Long userId) {
+        RoutineDay routineDay = findByIdOrThrow(id);
+
+        if (!routineDay.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this routine");
+        }
+
+        return routineDay;
     }
 
 

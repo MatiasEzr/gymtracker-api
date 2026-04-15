@@ -2,6 +2,7 @@ package com.matias.gymtracker.service;
 
 import com.matias.gymtracker.entity.User;
 import com.matias.gymtracker.entity.WeekLog;
+import com.matias.gymtracker.exceptions.ForbiddenException;
 import com.matias.gymtracker.exceptions.ResourceNotFoundException;
 import com.matias.gymtracker.repository.UserRepository;
 import com.matias.gymtracker.repository.WeekLogRepository;
@@ -32,10 +33,16 @@ public class WeekLogService {
         return weekLogRepository.findByUserId(userId);
     }
 
-    public WeekLog getById(Long weekId) {
+    public WeekLog getById(Long weekId, Long userId) {
 
-        return weekLogRepository.findByIdWithSessions(weekId)
+        WeekLog weekLog = weekLogRepository.findByIdWithSessions(weekId)
                 .orElseThrow(() -> new ResourceNotFoundException("WeekLog", weekId));
+
+        if (!weekLog.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this week log");
+        }
+
+        return weekLog;
     }
 
     public WeekLog findOrCreateCurrentWeek(Long userId) {
@@ -59,6 +66,7 @@ public class WeekLogService {
         Optional<WeekLog> existing =
                 weekLogRepository.findByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         userId,
+                        today,
                         today
                 );
 

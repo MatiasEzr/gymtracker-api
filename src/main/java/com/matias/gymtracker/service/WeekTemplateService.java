@@ -57,9 +57,9 @@ public class WeekTemplateService {
         return weekTemplateRepository.save(template);
     }
 
-    public WeekDayAssignment addDay(Long templateId, DayOfWeek day, Long routineDayId) {
+    public WeekDayAssignment addDay(Long templateId, DayOfWeek day, Long routineDayId, Long userId) {
 
-        WeekTemplate template = findByIdOrThrow(templateId);
+        WeekTemplate template = findByIdOrThrow(templateId, userId);
 
         // validate duplicate day
         if (assignmentRepository.existsByWeekTemplateIdAndDayOfWeek(templateId, day)) {
@@ -71,6 +71,10 @@ public class WeekTemplateService {
         if (routineDayId != null) {
             routineDay = routineDayRepository.findById(routineDayId)
                     .orElseThrow(() -> new ResourceNotFoundException("RoutineDay", routineDayId));
+
+            if (!routineDay.getUser().getId().equals(userId)) {
+                throw new ForbiddenException("You do not have access to this routine");
+            }
         }
 
         WeekDayAssignment assignment = new WeekDayAssignment();
@@ -96,16 +100,13 @@ public class WeekTemplateService {
             throw new ForbiddenException("You do not have permission to modify this template");
         }
 
-        template.getDays().remove(assignment); // orphanRemoval handles delete
+        template.getDays().remove(assignment);
+        assignmentRepository.delete(assignment);
     }
 
     public void setAsDefault(Long templateId, Long userId) {
 
-        WeekTemplate template = findByIdOrThrow(templateId);
-
-        if (!template.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("You do not have permission to modify this template");
-        }
+        WeekTemplate template = findByIdOrThrow(templateId, userId);
 
         // remove previous default if exists
         Optional<WeekTemplate> currentDefault =
@@ -122,5 +123,15 @@ public class WeekTemplateService {
 
         return weekTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("WeekTemplate", templateId));
+    }
+
+    public WeekTemplate findByIdOrThrow(Long templateId, Long userId) {
+        WeekTemplate template = findByIdOrThrow(templateId);
+
+        if (!template.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this template");
+        }
+
+        return template;
     }
 }

@@ -44,6 +44,10 @@ public class SessionLogService {
         RoutineDay routineDay = routineDayRepository.findById(routineDayId)
                 .orElseThrow(() -> new ResourceNotFoundException("RoutineDay", routineDayId));
 
+        if (!routineDay.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have access to this routine");
+        }
+
         SessionLog session = new SessionLog(today, notes, week, routineDay);
 
         // maintain relationship
