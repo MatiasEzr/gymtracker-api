@@ -16,7 +16,8 @@ public interface WeekLogRepository extends JpaRepository<WeekLog, Long> {
 
     Optional<WeekLog> findByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             Long userId,
-            LocalDate date
+            LocalDate startDate,
+            LocalDate endDate
     );
 
     @Query("SELECT w FROM WeekLog w LEFT JOIN FETCH w.sessions WHERE w.id = :id")
