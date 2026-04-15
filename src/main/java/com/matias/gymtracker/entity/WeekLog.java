@@ -27,7 +27,7 @@ public class WeekLog {
     @Column(nullable = false)
     private int weekNumber;
 
-    @Column(nullable = false)
+    @Column(name = "log_year", nullable = false)
     private int year;
 
     @ManyToOne
