@@ -22,40 +22,51 @@ public class ExerciseController {
     private final ExerciseMapper exerciseMapper;
 
     @GetMapping
-    public List<ExerciseResponse> getAllByRoutineDay(@RequestParam Long routineDayId) {
-        return exerciseMapper.toResponseList(exerciseService.getAllByRoutineDay(routineDayId));
+    public List<ExerciseResponse> getAllByRoutineDay(
+            @RequestParam Long routineDayId,
+            @RequestParam Long userId
+    ) {
+        return exerciseMapper.toResponseList(exerciseService.getAllByRoutineDay(routineDayId, userId));
     }
 
     @GetMapping("/{exerciseId}")
-    public ExerciseResponse findById(@PathVariable Long exerciseId) {
-        return exerciseMapper.toResponse(exerciseService.findByIdOrThrow(exerciseId));
+    public ExerciseResponse findById(
+            @PathVariable Long exerciseId,
+            @RequestParam Long userId
+    ) {
+        return exerciseMapper.toResponse(exerciseService.findByIdOrThrow(exerciseId, userId));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ExerciseResponse create(
             @RequestParam Long routineDayId,
+            @RequestParam Long userId,
             @Valid @RequestBody ExerciseCreateRequest request
     ) {
-        Exercise created = exerciseService.addToRoutineDay(routineDayId, exerciseMapper.toEntity(request));
+        Exercise created = exerciseService.addToRoutineDay(routineDayId, exerciseMapper.toEntity(request), userId);
         return exerciseMapper.toResponse(created);
     }
 
     @PatchMapping("/{exerciseId}")
     public ExerciseResponse update(
             @PathVariable Long exerciseId,
+            @RequestParam Long userId,
             @Valid @RequestBody ExerciseUpdateRequest request
     ) {
-        Exercise existing = exerciseService.findByIdOrThrow(exerciseId);
+        Exercise existing = exerciseService.findByIdOrThrow(exerciseId, userId);
         exerciseMapper.updateEntityFromDto(request, existing);
 
-        Exercise updated = exerciseService.update(exerciseId, existing);
+        Exercise updated = exerciseService.update(exerciseId, existing, userId);
         return exerciseMapper.toResponse(updated);
     }
 
     @DeleteMapping("/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long exerciseId) {
-        exerciseService.delete(exerciseId);
+    public void delete(
+            @PathVariable Long exerciseId,
+            @RequestParam Long userId
+    ) {
+        exerciseService.delete(exerciseId, userId);
     }
 }
